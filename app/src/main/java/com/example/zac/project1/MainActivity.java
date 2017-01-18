@@ -1,52 +1,123 @@
 package com.example.zac.project1;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.widget.ImageView;
+import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+import java.io.InputStream;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+public class MainActivity extends Activity {
+    private static final int IMAGE_GALLERY_REQUEST_LEFT = 1;
+    private static final int IMAGE_GALLERY_REQUEST_RIGHT = 3;
+    private ImageView imageViewLeft, imageViewRight;
+    private Bitmap image;
+    private boolean leftHasImage, rightHasImage = false;
+
+
+protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        //Gets a reference to the image view that holds an image.
+        imageViewLeft = (ImageView) findViewById(R.id.imageViewLeft);
+        imageViewRight = (ImageView) findViewById(R.id.imageViewRight);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+    }
+
+
+
+    public void loadGalleryImageLeft(View view) {
+        // Create intent to Open Image applications like Gallery, Google Photos
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        // Start the Intent
+        startActivityForResult(galleryIntent, IMAGE_GALLERY_REQUEST_LEFT);
+    }
+
+
+    public void loadGalleryImageRight (View view) {
+        // Create intent to Open Image applications like Gallery, Google Photos
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        // Start the Intent
+        startActivityForResult(galleryIntent, IMAGE_GALLERY_REQUEST_RIGHT);
+    }
+
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        try {
+            // When an Image is picked
+            if (requestCode == IMAGE_GALLERY_REQUEST_LEFT || requestCode == IMAGE_GALLERY_REQUEST_RIGHT) {
+                if (resultCode == RESULT_OK && null != data) {
+
+                    // Get the Image from data.  Address of img on SD card / drive.
+                    Uri imgURI = data.getData();
+
+                    //Input stream stuff here.
+                    InputStream inputStream;
+
+                    inputStream = getContentResolver().openInputStream(imgURI);
+
+                    //get a bitMap from the stream.
+                    image = BitmapFactory.decodeStream(inputStream);
+
+                    //Show the image to the user.
+                    switch (requestCode) {
+                        case IMAGE_GALLERY_REQUEST_LEFT:
+                            imageViewLeft.setImageBitmap(image);
+                            setUpCanvas(imageViewLeft);
+                            leftHasImage = true;
+                            break;
+
+                        case IMAGE_GALLERY_REQUEST_RIGHT:
+                            imageViewRight.setImageBitmap(image);
+                            setUpCanvas(imageViewRight);
+                            rightHasImage = true;
+                            break;
+                    }
+
+
+
+
+                }
+            } else {
+                Toast.makeText(this, "You have not selected an image",
+                        Toast.LENGTH_LONG).show();
             }
-        });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        } catch (Exception e) {
+            Toast.makeText(this, "Oops! Something went wrong", Toast.LENGTH_LONG)
+                    .show();
         }
 
-        return super.onOptionsItemSelected(item);
     }
+
+
+    public void setUpCanvas(ImageView imgView) {
+        //Create a new image bitmap and attach a brand new canvas to it.
+        Bitmap tempBitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(),
+                Bitmap.Config.RGB_565);
+        Canvas tempCanvas = new Canvas(tempBitmap);
+
+        //Draw the image bitmap into the cavas
+        tempCanvas.drawBitmap(image, 0, 0, null);
+
+        //Draw lines ontop of this canvas
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paint.setColor(Color.BLACK);
+        tempCanvas.drawCircle(60, 60, 8, paint);
+
+        imgView.setImageBitmap(tempBitmap);
+
+    }
+
 }

@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">Project1</string>
+    <string name="app_name">Morph and Warp</string>
     <string name="action_settings">Settings</string>
     <string name="images">Images</string>
+    <string name="load_image">Load Image</string>
+    <string name="load_image_left">Load Image</string>
 </resources>
