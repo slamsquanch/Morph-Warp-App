@@ -5,11 +5,4 @@ package com.example.zac.project1;
  */
 
 public class LineDraw {
-
-    public LinePoint start, end;
-
-    public LineDraw(double x, double y) {
-        this.start = new LinePoint(x, y);
-        this.end = new LinePoint(x, y);
-    }
 }

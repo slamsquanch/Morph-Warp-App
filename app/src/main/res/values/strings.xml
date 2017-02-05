@@ -4,4 +4,7 @@
     <string name="images">Images</string>
     <string name="load_image">Load Image</string>
     <string name="load_image_left">Load Image</string>
+    <string name="edit_mode">Edit Mode</string>
+    <string name="edit_off">Edit Off</string>
+    <string name="edit_on">Edit On</string>
 </resources>

@@ -7,26 +7,26 @@ import java.util.ArrayList;
  */
 
 public class LinePoint {
-    public double x, y;
+    public float x, y;
 
-    public LinePoint(double x, double y) {
+    public LinePoint(float x, float y) {
         this.x = x;
         this.y = y;
     }
 
-    public void setX(double x1) {
+    public void setX(float x1) {
         x = x1;
     }
 
-    public double getX() {
+    public float getX() {
         return this.x;
     }
 
-    public void setY(double y1) {
+    public void setY(float y1) {
         y = y1;
     }
 
-    public double getY() {
+    public float getY() {
         return this.y;
     }
 }
