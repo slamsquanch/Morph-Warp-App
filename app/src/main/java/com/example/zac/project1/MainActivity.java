@@ -21,7 +21,7 @@ public class MainActivity extends Activity {
     private static final int IMAGE_GALLERY_REQUEST_LEFT = 1;
     private static final int IMAGE_GALLERY_REQUEST_RIGHT = 3;
     private ImageView imageViewLeft, imageViewRight;
-    private Bitmap image, leftImage, rightImage;
+    private Bitmap image, leftImage, rightImage, drawingBitmap, cleanImage;
     private boolean leftHasImage, rightHasImage = false;
     private boolean drawMode = true;
     private boolean editMode = false;
@@ -29,11 +29,10 @@ public class MainActivity extends Activity {
     private int indexLeft, indexRight = 0;
     int lineIndex = -1;
     private Canvas myCanvas;
-    private Bitmap tempBitmap, cleanImage;
     private float currentX, currentY, startX, startY, endX, endY;
     Paint paint;
-    ArrayList<Line> leftList = new ArrayList<Line>();
-    ArrayList<Line> rightList = new ArrayList<Line>();
+    ArrayList<Line> leftList = new ArrayList<>();
+    ArrayList<Line> rightList = new ArrayList<>();
 
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +45,7 @@ public class MainActivity extends Activity {
     }
 
 
+
     //Load in the left image.
     public void loadGalleryImageLeft(View view) {
         // Create intent to Open Image applications like Gallery, Google Photos
@@ -56,6 +56,8 @@ public class MainActivity extends Activity {
     }
 
 
+
+
     //Load in the right image.
     public void loadGalleryImageRight(View view) {
         // Create intent to Open Image applications like Gallery, Google Photos
@@ -64,6 +66,9 @@ public class MainActivity extends Activity {
         // Start the Intent
         startActivityForResult(galleryIntent, IMAGE_GALLERY_REQUEST_RIGHT);
     }
+
+
+
 
     //Opens photo gallery to stream in images.
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -119,19 +124,45 @@ public class MainActivity extends Activity {
     }
 
 
+
+
     //Makes a new bitmap of the image then creates a canvas of that bitmap to draw on.
     private void setUpCanvas(ImageView imgView, Bitmap img) {
         //Create a new image bitmap and attach a brand new canvas to it.
-        tempBitmap = Bitmap.createBitmap(img.getWidth(), img.getHeight(),
+        drawingBitmap = Bitmap.createBitmap(img.getWidth(), img.getHeight(),
                 Bitmap.Config.RGB_565);
-        myCanvas = new Canvas(tempBitmap);
+        myCanvas = new Canvas(drawingBitmap);
 
         //Draw the image bitmap into the canvas
         myCanvas.drawBitmap(img, 0, 0, null);
 
-        imgView.setImageBitmap(tempBitmap);
+        imgView.setImageBitmap(drawingBitmap);
 
     }
+
+
+
+    public void rightImgToggle(View view) {
+       if (rightHasImage)  {
+           deleteRightPicture(view);
+       }
+        else {
+           loadGalleryImageRight(view);
+       }
+    }
+
+
+
+
+    public void leftImgToggle(View view) {
+        if (leftHasImage)  {
+            deleteLeftPicture(view);
+        }
+        else {
+            loadGalleryImageLeft(view);
+        }
+    }
+
 
 
     //Button that turns edit mode on/off.
@@ -146,6 +177,8 @@ public class MainActivity extends Activity {
     }
 
 
+
+
     //False means left photo is being interacted with.  True means right.
     private void sideTouched(ImageView imageView) {
         if (imageView == imageViewLeft) {
@@ -156,43 +189,20 @@ public class MainActivity extends Activity {
     }
 
 
+
+
     //CHECKS RADIUS OF THE PERSON'S TOUCH WITH EXISTING POINTS COORDINATES.
     public boolean radiusCheck(float touchX, float touchY, float pointX, float pointY) {
         float pointRadius = 55;
-        if ((touchX - pointX) * (touchX - pointX) + (touchY - pointY) * (touchY - pointY) <= pointRadius * pointRadius) {
-            // TOUCH INSIDE THE CIRCLE!
-            return true;
-        }
-        return false;
+        return (touchX - pointX) * (touchX - pointX) + (touchY - pointY) * (touchY - pointY) <= pointRadius * pointRadius;
 
     }
 
 
-    private boolean checkPointTouch(ArrayList<Line> lines, float touchX, float touchY) {
-        int index = 0;
-        Line line;
-        for (Line ln : lines) {
-            if (radiusCheck(touchX, touchY, ln.getStart().getX(), ln.getStart().getY())) {
-                //the user touched an existing point
-                //index = lines.indexOf(ln);
-                //line = new Line(touchX, touchY, ln.getEnd().getX(), ln.getEnd().getY());
-                //lines.set(index, line);
-                return true;
-            }
-
-            if (radiusCheck(touchX, touchY, ln.getEnd().getX(), ln.getEnd().getY())) {
-                //the user touched an existing point
-                //index = lines.indexOf(ln);
-                //line = new Line(touchX, touchY, ln.getEnd().getX(), ln.getEnd().getY());
-                //lines.set(index, line);
-                return true;
-            }
-        }
-        return false;
-    }
 
 
-    private void drawPointLines(ArrayList<Line> lines, int side) {
+    //Draws the lines from a list.  Takes in arraylist and integer indicating which photo to draw on.
+    private void drawLines(ArrayList<Line> lines, int side) {
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(Color.RED);
 
@@ -212,11 +222,11 @@ public class MainActivity extends Activity {
             }
 
         if (side == 0) {
-            imageViewRight.setImageBitmap(tempBitmap);
+            imageViewRight.setImageBitmap(drawingBitmap);
         }
-        
+
         if (side == 1) {
-            imageViewLeft.setImageBitmap(tempBitmap);
+            imageViewLeft.setImageBitmap(drawingBitmap);
         }
 
 }
@@ -226,10 +236,6 @@ public class MainActivity extends Activity {
     //Loops through Each line and its points and redraws them.
     private void refreshLines(ArrayList<Line> lines) {
         if (rightSide) {
-           // imageViewRight.setImageBitmap(rightImage);
-           // imageViewRight.buildDrawingCache();
-            //rightImage = imageViewRight.getDrawingCache();
-            //imageViewRight.setOnTouchListener(imageTouched);
             setUpCanvas(imageViewRight, rightImage);
 
             paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -241,17 +247,10 @@ public class MainActivity extends Activity {
                 paint.setColor(Color.BLUE);
                 myCanvas.drawLine(ln.start.getX(), ln.start.getY(), ln.end.getX(), ln.end.getY(), paint);
                 paint.setColor(Color.RED);
-                imageViewRight.setImageBitmap(tempBitmap);
-                //drawEndPoint(ln.getStart());
-               // drawEndPoint(ln.getEnd());
-                //lineDraw(ln.getStart(), ln.getEnd());
+                imageViewRight.setImageBitmap(drawingBitmap);
             }
         }
         else {
-            //imageViewLeft.setImageBitmap(leftImage);
-           // imageViewLeft.buildDrawingCache();
-            //leftImage = imageViewLeft.getDrawingCache();
-           // imageViewLeft.setOnTouchListener(imageTouched);
             setUpCanvas(imageViewLeft, leftImage);
 
             paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -263,65 +262,22 @@ public class MainActivity extends Activity {
                 paint.setColor(Color.BLUE);
                 myCanvas.drawLine(ln.start.getX(), ln.start.getY(), ln.end.getX(), ln.end.getY(), paint);
                 paint.setColor(Color.RED);
-                imageViewLeft.setImageBitmap(tempBitmap);
+                imageViewLeft.setImageBitmap(drawingBitmap);
             }
         }
 
     }
 
 
-   /* public boolean whichPoint(ArrayList<Line> linesList, float touchX, float touchY, float releaseX, float releaseY) {
 
-
-
-    } */
-
-
-
-
-
-
+    //Replace a pre-existing line with the editied one.
     public void replaceLine(int i, Line line, ArrayList<Line> list) {
         list.set(i, line);
         refreshLines(list);
     }
 
 
-    //Draws the end points of a line. (both start and end)
-    private void drawEndPoint(LinePoint point) {
-        paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setColor(Color.RED);
-        myCanvas.drawCircle(point.getX(), point.getY(), 16, paint);
-        imageViewLeft.setImageBitmap(tempBitmap);
-        imageViewRight.setImageBitmap(tempBitmap);
-    }
 
-
-    //Draws the line between two end points.
-    private void lineDraw(LinePoint point1, LinePoint point2) {
-        paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setColor(Color.BLUE);
-        float startX = point1.getX();
-        float startY = point1.getY();
-        float endX = point2.getX();
-        float endY = point2.getY();
-        myCanvas.drawLine(startX, startY, endX, endY, paint);
-        imageViewLeft.setImageBitmap(tempBitmap);
-        imageViewRight.setImageBitmap(tempBitmap);
-    }
-
-
-    //Gets the start point of a line at a specfic index
-    public LinePoint getStartPoint(ArrayList<Line> linesList, int index){
-        Line line = linesList.get(index);
-        return line.getStart();
-    }
-
-    //Gets the end point of a line at a specfic index
-    public LinePoint getEndPoint(ArrayList<Line> lines, int index){
-        Line line = lines.get(index);
-        return line.getEnd();
-    }
 
 
     private void getOtherPoint(ArrayList<Line> linesList, float touchX, float touchY, float releaseX, float releaseY) {
@@ -334,8 +290,6 @@ public class MainActivity extends Activity {
                 index = linesList.indexOf(ln);
                 pt = ln.getEnd();
                 line = new Line(pt.getX(), pt.getY(), releaseX, releaseY);
-                //System.out.println("get Index of edit: " + index);
-                //System.out.println("edit Points X: " + releaseX + " Y: " + releaseY);
                 replaceLine(index, line, linesList);
                 break;
             }
@@ -343,14 +297,38 @@ public class MainActivity extends Activity {
                 index = linesList.indexOf(ln);
                 pt = ln.getStart();
                 line = new Line(releaseX, releaseY, pt.getX(), pt.getY());
-                //System.out.println("get Index of edit: " + index);
-                //System.out.println("edit Points X: " + releaseX + " Y: " + releaseY);
                 replaceLine(index, line, linesList);
                 break;
             }
         }
     }
 
+
+
+    //Remove the left screen's photo.
+    public void deleteLeftPicture(View view) {
+        imageViewLeft.setImageBitmap(null);
+        leftHasImage = false;
+    }
+
+
+
+    //Remove the right screen's photo.
+    public void deleteRightPicture(View view) {
+        imageViewRight.setImageBitmap(null);
+        rightHasImage = false;
+    }
+
+
+
+
+    //Clears all lines drawn.
+    public void removeLines(View view) {
+        rightList.clear();
+        leftList.clear();
+        imageViewRight.setImageBitmap(rightImage);
+        imageViewLeft.setImageBitmap(leftImage);
+    }
 
 
     //Screen touch event handler.
@@ -382,12 +360,8 @@ public class MainActivity extends Activity {
                         Line lineLeft = new Line(startX, startY, endX, endY);
                         rightList.add(lineRight);
                         leftList.add(lineLeft);
-                        drawPointLines(rightList, 0);
-                        drawPointLines(leftList, 1);
-                        //refreshLines(rightList);
-                        //refreshLines(leftList);
-                        //System.out.println("Start Coords X: " + startX + "  Y: " + startY);
-                        //System.out.println("End Coords X: " + endX + "  Y: " + endY);
+                        drawLines(rightList, 0);
+                        drawLines(leftList, 1);
 
                         lineIndex++;
                     }
@@ -395,16 +369,11 @@ public class MainActivity extends Activity {
                     else {
                         endX = event.getX();
                         endY = event.getY();
-                        //System.out.println("Edit touch X: " + startX + "  Y: " + startY);
-                        //System.out.println("Edit release X: " + endX + "  Y: " + endY);
+
                         if (!rightSide) {
-                                //System.out.println("LEFT SCREEN EDIT");
                                 getOtherPoint(leftList, startX, startY, endX, endY);
-                                //LinePoint p = getStartPoint(leftList, lineIndex);
                         }
                         else {
-                            //System.out.println("RIGHT SCREEN EDIT");
-                            //LinePoint p = getStartPoint(rightList, lineIndex);
                             getOtherPoint(rightList, startX, startY, endX, endY);
                         }
                     }

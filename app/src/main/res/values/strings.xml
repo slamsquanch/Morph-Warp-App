@@ -7,4 +7,7 @@
     <string name="edit_mode">Edit Mode</string>
     <string name="edit_off">Edit Off</string>
     <string name="edit_on">Edit On</string>
+    <string name="remove_image">Remove Image</string>
+    <string name="load_img_right">Load Img Right</string>
+    <string name="load_img_left">Load Img Left</string>
 </resources>
