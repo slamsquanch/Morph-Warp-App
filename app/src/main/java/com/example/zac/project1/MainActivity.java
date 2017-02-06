@@ -25,6 +25,7 @@ public class MainActivity extends Activity {
     private boolean leftHasImage, rightHasImage = false;
     private boolean drawMode = true;
     private boolean editMode = false;
+    private boolean deleteLine = false;
     private boolean rightSide;
     private int indexLeft, indexRight = 0;
     int lineIndex = -1;
@@ -142,6 +143,8 @@ public class MainActivity extends Activity {
 
 
 
+
+    //Load or remove right image button.
     public void rightImgToggle(View view) {
        if (rightHasImage)  {
            deleteRightPicture(view);
@@ -153,7 +156,7 @@ public class MainActivity extends Activity {
 
 
 
-
+    //Load or remove left image button.
     public void leftImgToggle(View view) {
         if (leftHasImage)  {
             deleteLeftPicture(view);
@@ -235,22 +238,9 @@ public class MainActivity extends Activity {
 
     //Loops through Each line and its points and redraws them.
     private void refreshLines(ArrayList<Line> lines) {
-        if (rightSide) {
+        if (rightSide)
             setUpCanvas(imageViewRight, rightImage);
-
-            paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            paint.setColor(Color.RED);
-
-            for (Line ln : lines) {
-                myCanvas.drawCircle(ln.start.getX(), ln.start.getY(), 16, paint);
-                myCanvas.drawCircle(ln.end.getX(), ln.end.getY(), 16, paint);
-                paint.setColor(Color.BLUE);
-                myCanvas.drawLine(ln.start.getX(), ln.start.getY(), ln.end.getX(), ln.end.getY(), paint);
-                paint.setColor(Color.RED);
-                imageViewRight.setImageBitmap(drawingBitmap);
-            }
-        }
-        else {
+        else
             setUpCanvas(imageViewLeft, leftImage);
 
             paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -262,10 +252,12 @@ public class MainActivity extends Activity {
                 paint.setColor(Color.BLUE);
                 myCanvas.drawLine(ln.start.getX(), ln.start.getY(), ln.end.getX(), ln.end.getY(), paint);
                 paint.setColor(Color.RED);
-                imageViewLeft.setImageBitmap(drawingBitmap);
-            }
-        }
 
+                if (rightSide)
+                    imageViewRight.setImageBitmap(drawingBitmap);
+                else
+                    imageViewLeft.setImageBitmap(drawingBitmap);
+            }
     }
 
 
@@ -279,7 +271,7 @@ public class MainActivity extends Activity {
 
 
 
-
+    //Checks to see if an existingp has been selected within the touch radius, then finds it's partner point for the same line.
     private void getOtherPoint(ArrayList<Line> linesList, float touchX, float touchY, float releaseX, float releaseY) {
         int index;
         Line line;
@@ -307,6 +299,7 @@ public class MainActivity extends Activity {
 
     //Remove the left screen's photo.
     public void deleteLeftPicture(View view) {
+        leftImage = null;
         imageViewLeft.setImageBitmap(null);
         leftHasImage = false;
     }
@@ -315,10 +308,37 @@ public class MainActivity extends Activity {
 
     //Remove the right screen's photo.
     public void deleteRightPicture(View view) {
+        rightImage = null;
         imageViewRight.setImageBitmap(null);
         rightHasImage = false;
     }
 
+
+
+    //Toggle Button switch on to select a line to remove.
+    public void deleteLineToggle(View view) {
+        if (!deleteLine)
+            deleteLine = true;
+        else
+            deleteLine = false;
+    }
+
+
+
+    //delete a selected line
+    public void deleteLine(ArrayList<Line> linesList, float touchX, float touchY) {
+        System.out.println("HEREEE");
+        int index;
+        for (Line ln : linesList) {
+            if (radiusCheck(touchX, touchY, ln.getStart().getX(), ln.getStart().getY()) || radiusCheck(touchX, touchY, ln.getEnd().getX(), ln.getEnd().getY())) {   //IF it's the start point they grabbed...
+                //the user touched an existing point
+                index = linesList.indexOf(ln);
+                linesList.remove(index);
+                break;
+            }
+        }
+        refreshLines(linesList);
+    }
 
 
 
@@ -346,6 +366,13 @@ public class MainActivity extends Activity {
                     startY = event.getY();
                     sideTouched(imgView);
 
+                    if (editMode && deleteLine) {
+                        if (!rightSide)
+                            deleteLine(leftList, startX, startY);
+                        else
+                            deleteLine(rightList, startX, startY);
+                    }
+
                     break;
 
                 case MotionEvent.ACTION_MOVE:
@@ -370,12 +397,10 @@ public class MainActivity extends Activity {
                         endX = event.getX();
                         endY = event.getY();
 
-                        if (!rightSide) {
+                        if (!rightSide)
                                 getOtherPoint(leftList, startX, startY, endX, endY);
-                        }
-                        else {
+                        else
                             getOtherPoint(rightList, startX, startY, endX, endY);
-                        }
                     }
 
                     break;
