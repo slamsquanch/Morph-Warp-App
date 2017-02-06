@@ -1,101 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="horizontal" >
-
-
-    <android.support.design.widget.AppBarLayout
+    android:layout_height="match_parent">
+    <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:layout_height="match_parent"
+        android:orientation="horizontal" >
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
+
+        <android.support.design.widget.AppBarLayout
             android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            android:layout_height="wrap_content"
+            android:theme="@style/AppTheme.AppBarOverlay">
 
-    </android.support.design.widget.AppBarLayout>
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:background="?attr/colorPrimary"
+                app:popupTheme="@style/AppTheme.PopupOverlay" />
 
-    <include layout="@layout/content_main"
-        android:id="@+id/include"/>
+        </android.support.design.widget.AppBarLayout>
 
-
-
-
-    <ImageView
-        android:layout_width="500dp"
-        android:layout_height="500dp"
-        android:layout_gravity="left"
-        android:scaleType="fitXY"
-        android:id="@+id/imageViewLeft"
-        tools:ignore="ContentDescription,RtlHardcoded" />
-
-    <ImageView
-        android:layout_width="500dp"
-        android:layout_height="500dp"
-        android:layout_gravity="right"
-        android:scaleType="fitXY"
-        android:id="@+id/imageViewRight"
-        android:contentDescription=""
-        tools:ignore="ContentDescription,RtlHardcoded" />
+        <include layout="@layout/content_main"
+            android:id="@+id/include"/>
 
 
-    <ToggleButton
-        android:text="@string/load_img_left"
-        android:layout_width="124dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/toggleLeftImg"
-        android:onClick="leftImgToggle"
-        android:textOff="@string/load_image"
-        android:textOn="@string/remove_image"
-        android:checked="false"
-        app:layout_anchor="@+id/imageViewLeft"
-        app:layout_anchorGravity="bottom|left"
-        android:layout_gravity="top|right"
-        tools:ignore="RtlHardcoded" />
+        <Button
+            android:text="Clear Lines"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/clearLinesButton"
+            android:onClick="removeLines"
+            android:layout_gravity="top|left"
+            tools:ignore="HardcodedText,RtlHardcoded"
+            app:layout_anchor="@+id/include"
+            app:layout_anchorGravity="top|right"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true" />
 
-    <ToggleButton
-        android:text="@string/load_img_right"
-        android:layout_height="wrap_content"
-        android:id="@+id/imgLoadRight"
-        android:onClick="rightImgToggle"
-        android:layout_gravity="top|left"
-        android:layout_width="124dp"
-        android:textOff="@string/load_image"
-        android:textOn="@string/remove_image"
-        android:checked="false"
-        app:layout_anchor="@+id/imageViewRight"
-        app:layout_anchorGravity="bottom|right"
-        tools:ignore="RtlHardcoded" />
+        <ToggleButton
+            android:text="@string/delete_line"
+            android:layout_width="182dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/deleteLine"
+            android:onClick="deleteLineToggle"
+            android:textOff="@string/Delete_Line"
+            android:textOn="@string/select_line_delete"
+            app:layout_anchorGravity="top|right"
+            android:layout_gravity="center_vertical|left"
+            tools:ignore="RtlHardcoded,UnknownIdInLayout"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="111dp"
+            app:layout_anchor="@+id/include" />
 
-    <ToggleButton
-        android:text="@string/edit_mode"
-        android:layout_width="108dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/editButton"
-        android:onClick="toggleEditOnOff"
-        android:textOff="@string/edit_off"
-        android:textOn="@string/edit_on"
-        tools:ignore="RtlHardcoded"
-        android:layout_gravity="top|right"
-        app:layout_anchorGravity="bottom|center_horizontal"
-        app:layout_anchor="@+id/imageViewLeft" />
+        <ImageView
+            android:layout_gravity="left"
+            android:scaleType="fitXY"
+            android:id="@+id/imageViewLeft"
+            tools:ignore="ContentDescription,RtlHardcoded"
+            android:layout_width="475dp"
+            android:layout_height="360dp" />
 
-    <Button
-        android:text="Clear Lines"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/clearLinesButton"
-        android:onClick="removeLines"
-        android:layout_gravity="top|left"
-        tools:ignore="HardcodedText,RtlHardcoded"
-        app:layout_anchor="@+id/imageViewRight"
-        app:layout_anchorGravity="bottom|center_horizontal" />
+        <ImageView
+            android:layout_gravity="right"
+            android:scaleType="fitXY"
+            android:id="@+id/imageViewRight"
+            android:contentDescription=""
+            tools:ignore="ContentDescription,RtlHardcoded"
+            android:layout_width="475dp"
+            android:layout_height="360dp" />
+
+        <ToggleButton
+            android:text="@string/load_img_right"
+            android:layout_height="wrap_content"
+            android:id="@+id/imgLoadRight"
+            android:onClick="rightImgToggle"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:layout_width="124dp"
+            android:textOff="@string/load_image"
+            android:textOn="@string/remove_image"
+            android:checked="false"
+            app:layout_anchor="@+id/include"
+            app:layout_anchorGravity="bottom|right"
+            tools:ignore="RtlHardcoded"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true" />
+
+        <ToggleButton
+            android:text="@string/load_img_left"
+            android:layout_width="124dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/toggleLeftImg"
+            android:onClick="leftImgToggle"
+            android:textOff="@string/load_image"
+            android:textOn="@string/remove_image"
+            android:checked="false"
+            app:layout_anchor="@+id/include"
+            app:layout_anchorGravity="bottom|left"
+            android:layout_gravity="center_vertical|left"
+            tools:ignore="RtlHardcoded"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true" />
+
+        <ToggleButton
+            android:text="@string/edit_mode"
+            android:layout_width="115dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/editButton"
+            android:onClick="toggleEditOnOff"
+            android:textOff="@string/edit_off"
+            android:textOn="@string/edit_on"
+            tools:ignore="RtlHardcoded"
+            app:layout_anchor="@+id/include"
+            app:layout_anchorGravity="bottom|center_horizontal"
+            android:layout_gravity="top|center_horizontal" />
 
 
-</android.support.design.widget.CoordinatorLayout>
+    </android.support.design.widget.CoordinatorLayout>
+</RelativeLayout>
