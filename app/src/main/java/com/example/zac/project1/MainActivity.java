@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,24 +20,60 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 public class MainActivity extends Activity {
+
+    //  IMAGE DISPLAYING AND DRAWING.
     private static final int IMAGE_GALLERY_REQUEST_LEFT = 1;
     private static final int IMAGE_GALLERY_REQUEST_RIGHT = 3;
     private ImageView imageViewLeft, imageViewRight;
-    private Bitmap image, leftImage, rightImage, drawingBitmap, cleanImage;
+    private Bitmap image, leftImage, rightImage, drawingBitmap, finalLeftBmap, finalRightBmap;
+    ArrayList<Line> leftList = new ArrayList<>();
+    ArrayList<Line> rightList = new ArrayList<>();
+    private Canvas myCanvas;
+    Paint paint;
+
+
+    //  BOOLEANS
     private boolean leftHasImage, rightHasImage = false;
     private boolean drawMode = true;
     private boolean editMode = false;
     private boolean deleteLine = false;
     private boolean rightSide;
     private int indexLeft, indexRight = 0;
+
+
+    //  NUMBERS
     int lineIndex = -1;
-    private Canvas myCanvas;
+    int deleteIndex = 0;
     private float currentX, currentY, startX, startY, endX, endY;
-    Paint paint;
-    ArrayList<Line> leftList = new ArrayList<>();
-    ArrayList<Line> rightList = new ArrayList<>();
 
 
+    //  Morph / Warp stuff
+    Line line;
+    //Warp warp;
+    Morph morph = new Morph();
+    ArrayList<Line> incrValues;
+    ArrayList<Line> calcLines;
+    ArrayList<Bitmap> newBitmaps;
+    float numFrames = 0;
+
+    AnimationDrawable morphAnimation;
+
+
+
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            morphAnimation.start();
+            return true;
+        }
+        return super.onTouchEvent(event);
+    }
+
+
+
+    /**
+     * App startup.
+     * @param savedInstanceState
+     */
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -44,6 +82,7 @@ public class MainActivity extends Activity {
         imageViewRight = (ImageView) findViewById(R.id.imageViewRight);
 
     }
+
 
 
 
@@ -95,8 +134,8 @@ public class MainActivity extends Activity {
                         case IMAGE_GALLERY_REQUEST_LEFT:
                             leftImage = BitmapFactory.decodeStream(inputStream);
                             imageViewLeft.setImageBitmap(leftImage);
-                            imageViewLeft.buildDrawingCache();
-                            leftImage = imageViewLeft.getDrawingCache();
+                            imageViewLeft.buildDrawingCache();          //scale?
+                            leftImage = imageViewLeft.getDrawingCache();    //scale?
                             imageViewLeft.setOnTouchListener(imageTouched);
                             setUpCanvas(imageViewLeft, leftImage);
                             leftHasImage = true;
@@ -105,8 +144,8 @@ public class MainActivity extends Activity {
                         case IMAGE_GALLERY_REQUEST_RIGHT:
                             rightImage = BitmapFactory.decodeStream(inputStream);
                             imageViewRight.setImageBitmap(rightImage);
-                            imageViewRight.buildDrawingCache();
-                            rightImage = imageViewRight.getDrawingCache();
+                            imageViewRight.buildDrawingCache();         //scale?
+                            rightImage = imageViewRight.getDrawingCache();      //scale?
                             imageViewRight.setOnTouchListener(imageTouched);
                             setUpCanvas(imageViewRight, rightImage);
                             rightHasImage = true;
@@ -144,6 +183,26 @@ public class MainActivity extends Activity {
 
 
 
+    //Remove the left screen's photo.
+    public void deleteLeftPicture(View view) {
+        leftImage = null;
+        imageViewLeft.setImageBitmap(null);
+        leftHasImage = false;
+    }
+
+
+
+    //Remove the right screen's photo.
+    public void deleteRightPicture(View view) {
+        rightImage = null;
+        imageViewRight.setImageBitmap(null);
+        rightHasImage = false;
+    }
+
+
+
+
+
     //Load or remove right image button.
     public void rightImgToggle(View view) {
        if (rightHasImage)  {
@@ -156,6 +215,7 @@ public class MainActivity extends Activity {
 
 
 
+
     //Load or remove left image button.
     public void leftImgToggle(View view) {
         if (leftHasImage)  {
@@ -165,6 +225,8 @@ public class MainActivity extends Activity {
             loadGalleryImageLeft(view);
         }
     }
+
+
 
 
 
@@ -232,7 +294,8 @@ public class MainActivity extends Activity {
             imageViewLeft.setImageBitmap(drawingBitmap);
         }
 
-}
+    }
+
 
 
 
@@ -271,8 +334,8 @@ public class MainActivity extends Activity {
 
 
 
-    //Checks to see if an existingp has been selected within the touch radius, then finds it's partner point for the same line.
-    private void getOtherPoint(ArrayList<Line> linesList, float touchX, float touchY, float releaseX, float releaseY) {
+    //Checks to see if an existing point has been selected within the touch radius, then finds it's partner point for the same line.
+    private void checkEndPoints(ArrayList<Line> linesList, float touchX, float touchY, float releaseX, float releaseY) {
         int index;
         Line line;
         LinePoint pt;
@@ -281,37 +344,20 @@ public class MainActivity extends Activity {
                 //the user touched an existing point
                 index = linesList.indexOf(ln);
                 pt = ln.getEnd();
-                line = new Line(pt.getX(), pt.getY(), releaseX, releaseY);
+                line = new Line(releaseX, releaseY, pt.getX(), pt.getY());
                 replaceLine(index, line, linesList);
                 break;
             }
             else if (radiusCheck(touchX, touchY, ln.getEnd().getX(), ln.getEnd().getY())) {  //User Grabbed the END POINT of a line...
                 index = linesList.indexOf(ln);
                 pt = ln.getStart();
-                line = new Line(releaseX, releaseY, pt.getX(), pt.getY());
+                line = new Line(pt.getX(), pt.getY(), releaseX, releaseY);
                 replaceLine(index, line, linesList);
                 break;
             }
         }
     }
 
-
-
-    //Remove the left screen's photo.
-    public void deleteLeftPicture(View view) {
-        leftImage = null;
-        imageViewLeft.setImageBitmap(null);
-        leftHasImage = false;
-    }
-
-
-
-    //Remove the right screen's photo.
-    public void deleteRightPicture(View view) {
-        rightImage = null;
-        imageViewRight.setImageBitmap(null);
-        rightHasImage = false;
-    }
 
 
 
@@ -330,20 +376,21 @@ public class MainActivity extends Activity {
         System.out.println("HEREEE");
         int index;
         for (Line ln : linesList) {
-            if (radiusCheck(touchX, touchY, ln.getStart().getX(), ln.getStart().getY()) || radiusCheck(touchX, touchY, ln.getEnd().getX(), ln.getEnd().getY())) {   //IF it's the start point they grabbed...
+            if (radiusCheck(touchX, touchY, ln.getStart().getX(), ln.getStart().getY()) || radiusCheck(touchX, touchY, ln.getEnd().getX(), ln.getEnd().getY())) {   //IF it's an end point they grabbed...
                 //the user touched an existing point
-                index = linesList.indexOf(ln);
-                linesList.remove(index);
+                deleteIndex = linesList.indexOf(ln);
+                linesList.remove(deleteIndex);;
                 break;
             }
         }
-        refreshLines(linesList);
+        //refreshLines(linesList);
+
     }
 
 
 
     //Clears all lines drawn.
-    public void removeLines(View view) {
+    public void clearLines(View view) {
         rightList.clear();
         leftList.clear();
         imageViewRight.setImageBitmap(rightImage);
@@ -351,10 +398,31 @@ public class MainActivity extends Activity {
     }
 
 
+    public void testWarp(View view) {
+        if(!leftList.isEmpty() && !rightList.isEmpty()) {
+            //warpRight(leftImage, rightImage, leftList, rightList );
+            //warpLeft(leftImage, rightImage, leftList, rightList );
+            morph.setNumFrames(1);
+            morph.doTheMorph(leftList, rightList, leftImage, rightImage);
+            newBitmaps = morph.morphedImages;
+            imageViewLeft.setBackgroundResource(R.drawable.morph_animation);
+            morphAnimation = (AnimationDrawable)imageViewLeft.getBackground();
+            for(Bitmap image: newBitmaps){
+                BitmapDrawable frame = new BitmapDrawable(getResources(), image);
+                morphAnimation.addFrame(frame, 200);
+            }
+        }
+        //Else.  Need line reference to morph!
+    }
+
+
+
+
+
+
     //Screen touch event handler.
     View.OnTouchListener imageTouched = new View.OnTouchListener() {
             public boolean onTouch(View imageView, MotionEvent event) {
-
             ImageView imgView = (ImageView) imageView;
 
             float touchX = event.getX();
@@ -367,12 +435,21 @@ public class MainActivity extends Activity {
                     sideTouched(imgView);
 
                     if (editMode && deleteLine) {
-                        if (!rightSide)
+                        if (!rightSide) {
                             deleteLine(leftList, startX, startY);
-                        else
+                            rightList.remove(deleteIndex);
+                            refreshLines(leftList);
+                            rightSide = true;
+                            refreshLines(rightList);
+                        }
+                        else {
                             deleteLine(rightList, startX, startY);
+                            leftList.remove(deleteIndex);
+                            refreshLines(rightList);
+                            rightSide = false;
+                            refreshLines(leftList);
+                        }
                     }
-
                     break;
 
                 case MotionEvent.ACTION_MOVE:
@@ -398,9 +475,9 @@ public class MainActivity extends Activity {
                         endY = event.getY();
 
                         if (!rightSide)
-                                getOtherPoint(leftList, startX, startY, endX, endY);
+                                checkEndPoints(leftList, startX, startY, endX, endY);
                         else
-                            getOtherPoint(rightList, startX, startY, endX, endY);
+                            checkEndPoints(rightList, startX, startY, endX, endY);
                     }
 
                     break;

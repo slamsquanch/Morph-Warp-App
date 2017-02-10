@@ -13,4 +13,6 @@
     <string name="Delete_Line">Delete Line</string>
     <string name="select_line_delete">Select Line To Delete</string>
     <string name="delete_line">Delete Line</string>
+    <string name="button">Button</string>
+    <string name="morph">Morph!</string>
 </resources>
