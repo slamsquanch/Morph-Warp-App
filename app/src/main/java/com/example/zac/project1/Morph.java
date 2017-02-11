@@ -14,10 +14,16 @@ public class Morph {
     //ArrayList<Line> increments;
     ArrayList<Line> incrValues;
     ArrayList<Line> calcLines;
-    ArrayList<Bitmap> bitmaps, morphedImages;
+    ArrayList<Bitmap> morphedImages;
+    ArrayList<Line> increment;
     float numFrames = 0;
     Warp warp = new Warp();
+    Line incLine;
 
+    public Morph() {
+        System.out.println("Morph created");
+        morphedImages = new ArrayList<Bitmap>();
+    }
 
 
 
@@ -28,50 +34,56 @@ public class Morph {
 
     // 1. Driver morph method calls the other morphing methods.
     public void doTheMorph(ArrayList<Line> linesLeft, ArrayList<Line> linesRight, Bitmap imgLeft, Bitmap imgRight) {
-        incrValues = calcIncrementValues(linesLeft, linesRight, numFrames);      // Step 2
-        bitmaps = new ArrayList<Bitmap>();
-        bitmaps.add(imgLeft);
-        for (int i = 1; i < numFrames; i++) {
-            findFrameLines(linesLeft, linesRight, incrValues, i, imgLeft, imgRight);             //Step 3
+        //System.out.println("doTheMorph()");
+        //incrValues = calcIncrementValues(linesLeft, linesRight, numFrames);      // Step 2
+        calcIncrementValues(linesLeft, linesRight, numFrames);      // Step 2
+        morphedImages.add(imgLeft);
+        for (int i = 1; i <= numFrames; i++) {
+            //System.out.println("doTheMorph() for loop");
+            findFrameLines(linesLeft, linesRight, increment, i, imgLeft, imgRight);             //Step 3
         }
+        morphedImages.add(imgRight);
     }
 
 
 
 
     // 2. Calculates the increment values between every pair of lines and returns them in a list.
-    public ArrayList<Line> calcIncrementValues(ArrayList<Line> linesLeft, ArrayList<Line> linesRight, float numFrames) {
-        ArrayList<Line> increment = new ArrayList<Line>();
+    public void calcIncrementValues(ArrayList<Line> linesLeft, ArrayList<Line> linesRight, float frames) {
+        //System.out.println("calcIncrementValues()");
+        increment = new ArrayList<Line>();
         if (linesLeft.size() == linesRight.size()) {
             for (int i = 0; i < linesLeft.size(); i++) {
-                Line incLine = new Line((linesLeft.get(i).getStart().getX() - linesRight.get(i).getStart().getX()) / numFrames,
-                        (linesLeft.get(i).getStart().getY() - linesRight.get(i).getStart().getY()) / numFrames,
-                        (linesLeft.get(i).getEnd().getX() - linesRight.get(i).getEnd().getX()) / numFrames,
-                        (linesLeft.get(i).getEnd().getY() - linesRight.get(i).getEnd().getY()) / numFrames);
+                incLine = new Line((linesLeft.get(i).getStart().getX() - linesRight.get(i).getStart().getX()) / frames,
+                        (linesLeft.get(i).getStart().getY() - linesRight.get(i).getStart().getY()) / frames,
+                        (linesLeft.get(i).getEnd().getX() - linesRight.get(i).getEnd().getX()) / frames,
+                        (linesLeft.get(i).getEnd().getY() - linesRight.get(i).getEnd().getY()) / frames);
                 increment.add(incLine);
             }
         }
-        return increment;
+        //return increment;
     }
 
 
 
     // 3. Calculate THIS frame's lines.
     public void findFrameLines(ArrayList<Line> leftLines, ArrayList<Line> rightLines, ArrayList<Line> increments, float curFrame, Bitmap imgL, Bitmap imgR) {
+        //System.out.println("Inside findFrameLines()");
         ArrayList<Line> calcLines = calcFrameLines(leftLines, increments, curFrame);
-        Bitmap left = warp.warpLeft(imgL, leftLines, calcLines);
-        Bitmap right = warp.warpRight(imgR, rightLines, calcLines);
+        Bitmap left = warp.warpLeft(imgL, calcLines, leftLines);
+        Bitmap right = warp.warpRight(imgR, calcLines, rightLines);
         //GET LEFT (LeftLines, calcLines, imgL)
         //GET RIGHT (RightLines, calcLines, imgR)
-        morphedImages = new ArrayList<Bitmap>();
         morphedImages.add(crossfade(left, right, curFrame));        // Step 5
+        System.out.println("morphedImages size: " + morphedImages.size());
 
     }
 
 
 
     // 4. Calculates the lines for the current frame being morphed.
-    public ArrayList<Line> calcFrameLines(ArrayList<Line> leftLines, ArrayList<Line> increments,float curFrame) {
+    public ArrayList<Line> calcFrameLines(ArrayList<Line> leftLines, ArrayList<Line> increments, float curFrame) {
+        //System.out.println("inside calcFrameLines()");
         calcLines = new ArrayList<Line>();
         if (leftLines.size() == increments.size()) {
             for (int i = 0; i < leftLines.size(); i++) {
@@ -93,22 +105,22 @@ public class Morph {
      * @return
      */
     public Bitmap crossfade(Bitmap leftFrame, Bitmap rightFrame, float curFrame) {
+        //System.out.println("Inside crossFade()");
         float colourPercent1 = (numFrames - curFrame) / numFrames;
         float colourPercent2 = curFrame / numFrames;
         Bitmap newImage  = Bitmap.createBitmap(leftFrame.getWidth(), leftFrame.getHeight(),
-                Bitmap.Config.RGB_565);
-
+                Bitmap.Config.ARGB_8888);
         if (leftFrame.getWidth() == rightFrame.getWidth() && leftFrame.getHeight() == rightFrame.getHeight()) {
             for (float x = 0; x < leftFrame.getWidth(); x++) {
                 for (float y = 0; y < leftFrame.getHeight(); y++) {
                     int lPixel = leftFrame.getPixel((int)x, (int)y);
                     int rPixel = rightFrame.getPixel((int)x, (int)y);
-                    int red = ((int)Color.red(lPixel) * (int)colourPercent1)
-                            + ((int)Color.red(rPixel) * (int)colourPercent2);
-                    int green = ((int)Color.green(lPixel) * (int)colourPercent1)
-                            + ((int)Color.green(rPixel) * (int)colourPercent2);
-                    int blue = ((int)Color.blue(lPixel) * (int)colourPercent1)
-                            + ((int)Color.blue(rPixel) * (int)colourPercent2);
+                    int red = (int)(Color.red(lPixel) * colourPercent1
+                            + Color.red(rPixel) * colourPercent2);
+                    int green = (int)(Color.green(lPixel) * colourPercent1
+                            + Color.green(rPixel) * colourPercent2);
+                    int blue = (int)(Color.blue(lPixel) * colourPercent1
+                            + Color.blue(rPixel) * colourPercent2);
                     newImage.setPixel((int)x, (int)y, Color.argb(255, red, green, blue));
                 }
             }
