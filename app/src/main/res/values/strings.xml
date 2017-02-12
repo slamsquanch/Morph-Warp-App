@@ -7,4 +7,12 @@
     <string name="edit_mode">Edit Mode</string>
     <string name="edit_off">Edit Off</string>
     <string name="edit_on">Edit On</string>
+    <string name="remove_image">Remove Image</string>
+    <string name="load_img_right">Load Img Right</string>
+    <string name="load_img_left">Load Img Left</string>
+    <string name="Delete_Line">Delete Line</string>
+    <string name="select_line_delete">Select Line To Delete</string>
+    <string name="delete_line">Delete Line</string>
+    <string name="button">Button</string>
+    <string name="morph">Morph!</string>
 </resources>

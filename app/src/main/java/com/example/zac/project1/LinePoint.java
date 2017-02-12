@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 /**
  * Created by Zac on 2017-01-18.
+ * This class is essentially the same as Java's Point class but uses floats to make things easier.
  */
 
 public class LinePoint {
