@@ -3,6 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     android:id="@+id/main_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -128,11 +130,45 @@
             android:layout_width="99dp"
             android:layout_height="wrap_content"
             android:id="@+id/testWarp"
-            android:onClick="testWarp"
+            android:onClick="activateMorph"
             app:layout_anchor="@+id/include"
             app:layout_anchorGravity="top|center_horizontal"
             android:layout_gravity="center_vertical|center_horizontal"
             tools:ignore="RtlHardcoded" />
 
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/editText"
+            tools:text="Number of Frames"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LabelFor" />
+
+        <Button
+            android:text="Prev."
+            android:layout_width="69dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/prev"
+            android:onClick="previousFrame"
+            app:layout_anchor="@+id/imageViewRight"
+            app:layout_anchorGravity="bottom|center_horizontal"
+            android:layout_gravity="bottom|left"
+            tools:text="Prev." />
+
+        <Button
+            android:text="Next"
+            android:layout_height="wrap_content"
+            android:id="@+id/next"
+            android:onClick="nextFrame"
+            app:layout_anchor="@+id/imageViewRight"
+            app:layout_anchorGravity="bottom|center_horizontal"
+            android:layout_gravity="bottom|right"
+            tools:text="Next"
+            android:layout_width="69dp" />
+
+
     </android.support.design.widget.CoordinatorLayout>
+
 </RelativeLayout>

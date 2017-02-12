@@ -22,6 +22,7 @@ import static com.example.zac.project1.R.id.imageViewRight;
 
 /**
  * Created by Zac on 2017-02-06.
+ * This class performs the left to right warp  and the right to left warp.
  */
 
 public class Warp {
@@ -39,11 +40,10 @@ public class Warp {
      * @param
      */
     public Bitmap warpLeft(Bitmap left, ArrayList<Line> leftLines, ArrayList<Line> rightLines) {
-
+        System.out.println("Inside warpLeft()");
         line = new Line();
         Bitmap finalLeftBmap = Bitmap.createBitmap(left.getWidth(), left.getHeight(), Bitmap.Config.RGB_565);
 
-        // try {
 
         for (float x = 0; x < left.getWidth(); x++) {
             for (float y = 0; y < left.getHeight(); y++) {
@@ -88,10 +88,6 @@ public class Warp {
                     totalDeltaHoriz += deltaX.getX() * weight;
                     totalDeltaVert += deltaX.getY() * weight;
 
-
-                    //imageViewRight.buildDrawingCache();         //scale?
-                    //finalLeftBmap = imageViewRight.getDrawingCache();      //scale?
-                    //setUpCanvas(imageViewRight, finalLeftBmap);
                 }
                 xPrime.setX((float)(x + (totalDeltaHoriz / totalWeight)));
                 xPrime.setY((float)(y + (totalDeltaVert / totalWeight)));
@@ -113,14 +109,9 @@ public class Warp {
                 finalLeftBmap.setPixel((int)x, (int)y, left.getPixel((int) xPrime.getX(), (int) xPrime.getY()));
             }
         }
-        //imageViewRight.setImageBitmap(finalLeftBmap);
-        //}
-        // catch (Exception e){
-        //      System.out.println("EXCEPTION OCCURED.");
-        // }
         System.out.println("out of loop.");
-        return finalLeftBmap;
 
+        return finalLeftBmap;
     }
 
 
@@ -131,11 +122,10 @@ public class Warp {
      * @param
      */
     public Bitmap warpRight(Bitmap right, ArrayList<Line> leftLines, ArrayList<Line> rightLines) {
-
+        System.out.println("Inside warpRight()");
         line = new Line();
         Bitmap finalRightBmap = Bitmap.createBitmap(right.getWidth(), right.getHeight(), Bitmap.Config.RGB_565);
 
-        // try {
 
         for (float x = 0; x < right.getWidth(); x++) {
             for (float y = 0; y < right.getHeight(); y++) {
@@ -203,16 +193,9 @@ public class Warp {
                 finalRightBmap.setPixel((int)x, (int)y, right.getPixel((int) xPrime.getX(), (int) xPrime.getY()));
             }
         }
-       // imageViewLeft.setImageBitmap(finalRightBmap);
-        //}
-        // catch (Exception e){
-        //      System.out.println("EXCEPTION OCCURED.");
-        // }
+
         System.out.println("out of loop.");
         return finalRightBmap;
     }
-
-
-
 
 }

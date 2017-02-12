@@ -3,10 +3,12 @@ package com.example.zac.project1;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
  * Created by Zac on 2017-02-08.
+ * I perform my crossfade for each frame as I'm calculating the frame lines, rather than doing them all at the end.
  */
 
 public class Morph {
@@ -16,12 +18,13 @@ public class Morph {
     ArrayList<Line> calcLines;
     ArrayList<Bitmap> morphedImages;
     ArrayList<Line> increment;
+    Bitmap left;
+    Bitmap right;
     float numFrames = 0;
     Warp warp = new Warp();
     Line incLine;
 
     public Morph() {
-        System.out.println("Morph created");
         morphedImages = new ArrayList<Bitmap>();
     }
 
@@ -34,12 +37,9 @@ public class Morph {
 
     // 1. Driver morph method calls the other morphing methods.
     public void doTheMorph(ArrayList<Line> linesLeft, ArrayList<Line> linesRight, Bitmap imgLeft, Bitmap imgRight) {
-        //System.out.println("doTheMorph()");
-        //incrValues = calcIncrementValues(linesLeft, linesRight, numFrames);      // Step 2
         calcIncrementValues(linesLeft, linesRight, numFrames);      // Step 2
         morphedImages.add(imgLeft);
         for (int i = 1; i <= numFrames; i++) {
-            //System.out.println("doTheMorph() for loop");
             findFrameLines(linesLeft, linesRight, increment, i, imgLeft, imgRight);             //Step 3
         }
         morphedImages.add(imgRight);
@@ -48,9 +48,8 @@ public class Morph {
 
 
 
-    // 2. Calculates the increment values between every pair of lines and returns them in a list.
+    // 2. Calculates the increment values between every pair of lines and stores them in a list called "increment" (class variable).
     public void calcIncrementValues(ArrayList<Line> linesLeft, ArrayList<Line> linesRight, float frames) {
-        //System.out.println("calcIncrementValues()");
         increment = new ArrayList<Line>();
         if (linesLeft.size() == linesRight.size()) {
             for (int i = 0; i < linesLeft.size(); i++) {
@@ -61,29 +60,46 @@ public class Morph {
                 increment.add(incLine);
             }
         }
-        //return increment;
     }
 
 
 
     // 3. Calculate THIS frame's lines.
     public void findFrameLines(ArrayList<Line> leftLines, ArrayList<Line> rightLines, ArrayList<Line> increments, float curFrame, Bitmap imgL, Bitmap imgR) {
-        //System.out.println("Inside findFrameLines()");
         ArrayList<Line> calcLines = calcFrameLines(leftLines, increments, curFrame);
         Bitmap left = warp.warpLeft(imgL, calcLines, leftLines);
-        Bitmap right = warp.warpRight(imgR, calcLines, rightLines);
-        //GET LEFT (LeftLines, calcLines, imgL)
-        //GET RIGHT (RightLines, calcLines, imgR)
+        Bitmap right = warp.warpRight(imgR, calcLines, leftLines);
         morphedImages.add(crossfade(left, right, curFrame));        // Step 5
-        System.out.println("morphedImages size: " + morphedImages.size());
+    }
 
+
+
+    // USED FOR DEBUGGING.  NOT BEING CALLED RIGHT NOW.
+    public void setCalcLines(ArrayList<Line> leftLines, ArrayList<Line> increments, float curFrame, Bitmap imgL) {
+        calcLines = calcFrameLines(leftLines, increments, curFrame);
+        left = warp.warpLeft(imgL, calcLines, leftLines);
+    }
+
+
+    // USED FOR DEBUGGING.  NOT BEING CALLED RIGHT NOW.
+    public ArrayList<Line> reverseRightLines(ArrayList<Line> calcLines) {
+       ArrayList<Line> reverseRightLines = new ArrayList<Line>();
+        reverseRightLines = calcLines;
+        int i = 0;
+        int j = calcLines.size()-1;
+        while (i < j) {
+            Line temp = reverseRightLines.get(i);
+            reverseRightLines.set( i, reverseRightLines.get(j));
+            reverseRightLines.set( j, temp);
+            i++; j--;
+        }
+        return reverseRightLines;
     }
 
 
 
     // 4. Calculates the lines for the current frame being morphed.
     public ArrayList<Line> calcFrameLines(ArrayList<Line> leftLines, ArrayList<Line> increments, float curFrame) {
-        //System.out.println("inside calcFrameLines()");
         calcLines = new ArrayList<Line>();
         if (leftLines.size() == increments.size()) {
             for (int i = 0; i < leftLines.size(); i++) {
@@ -105,13 +121,12 @@ public class Morph {
      * @return
      */
     public Bitmap crossfade(Bitmap leftFrame, Bitmap rightFrame, float curFrame) {
-        //System.out.println("Inside crossFade()");
         float colourPercent1 = (numFrames - curFrame) / numFrames;
         float colourPercent2 = curFrame / numFrames;
         Bitmap newImage  = Bitmap.createBitmap(leftFrame.getWidth(), leftFrame.getHeight(),
                 Bitmap.Config.ARGB_8888);
         if (leftFrame.getWidth() == rightFrame.getWidth() && leftFrame.getHeight() == rightFrame.getHeight()) {
-            for (float x = 0; x < leftFrame.getWidth(); x++) {
+            for (float x = 0, x2 = rightFrame.getWidth(); x < leftFrame.getWidth(); x++) {
                 for (float y = 0; y < leftFrame.getHeight(); y++) {
                     int lPixel = leftFrame.getPixel((int)x, (int)y);
                     int rPixel = rightFrame.getPixel((int)x, (int)y);

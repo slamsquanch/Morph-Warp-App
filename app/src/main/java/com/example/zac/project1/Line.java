@@ -2,8 +2,10 @@ package com.example.zac.project1;
 
 /**
  * Created by Zac on 2017-01-18.
+ *
+ * Line class contains the definition of a line object which holds points for the start and end.  Has a vector constructor also.
+ * This class also holds all of the vector projection calcuation methods.
  */
-
 public class Line {
 
     public LinePoint start, end;
@@ -20,7 +22,7 @@ public class Line {
     }
 
 
-    // Vector Constructor.
+    // Vector Constructor.  Treat a line like a vector.
     public Line(float startX, float startY) {
         this.start = new LinePoint(startX, startY);
     }

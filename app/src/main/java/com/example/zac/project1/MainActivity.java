@@ -7,14 +7,22 @@ import android.graphics.Paint;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemSelectedListener;
+
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -39,6 +47,7 @@ public class MainActivity extends Activity {
     private boolean deleteLine = false;
     private boolean rightSide;
     private int indexLeft, indexRight = 0;
+    private boolean morphed = false;
 
 
     //  NUMBERS
@@ -49,24 +58,19 @@ public class MainActivity extends Activity {
 
     //  Morph / Warp stuff
     Line line;
-    //Warp warp;
     Morph morph = new Morph();
     ArrayList<Line> incrValues;
     ArrayList<Line> calcLines;
     ArrayList<Bitmap> newBitmaps;
     float numFrames = 0;
-
+    int frame = 0;   //frame is the index of morphedImages array in morph.
+    int last;
     AnimationDrawable morphAnimation;
+    EditText myEdit;
 
 
 
-    public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            morphAnimation.start();
-            return true;
-        }
-        return super.onTouchEvent(event);
-    }
+
 
 
 
@@ -77,16 +81,17 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         //Gets a reference to the image view that holds an image.
         imageViewLeft = (ImageView) findViewById(R.id.imageViewLeft);
         imageViewRight = (ImageView) findViewById(R.id.imageViewRight);
+        findViewById(R.id.editText).setOnKeyListener(inputListen);
 
     }
 
 
 
-
-    //Load in the left image.
+            //Load in the left image.
     public void loadGalleryImageLeft(View view) {
         // Create intent to Open Image applications like Gallery, Google Photos
         Intent galleryIntent = new Intent(Intent.ACTION_PICK,
@@ -178,6 +183,14 @@ public class MainActivity extends Activity {
 
         imgView.setImageBitmap(drawingBitmap);
 
+    }
+
+
+    public void inputFrames(View view) {
+        EditText myEdit = (EditText) findViewById(R.id.editText);
+        String inputString =  myEdit.getText().toString();
+        int numFrame = Integer.parseInt(inputString);
+        morph.setNumFrames(numFrame);
     }
 
 
@@ -280,9 +293,7 @@ public class MainActivity extends Activity {
             for (Line ln : lines) {
                 myCanvas.drawCircle(ln.start.getX(), ln.start.getY(), 16, paint);
                 myCanvas.drawCircle(ln.end.getX(), ln.end.getY(), 16, paint);
-                paint.setColor(Color.BLUE);
                 myCanvas.drawLine(ln.start.getX(), ln.start.getY(), ln.end.getX(), ln.end.getY(), paint);
-                paint.setColor(Color.RED);
 
             }
 
@@ -312,9 +323,7 @@ public class MainActivity extends Activity {
             for (Line ln : lines) {
                 myCanvas.drawCircle(ln.start.getX(), ln.start.getY(), 16, paint);
                 myCanvas.drawCircle(ln.end.getX(), ln.end.getY(), 16, paint);
-                paint.setColor(Color.BLUE);
                 myCanvas.drawLine(ln.start.getX(), ln.start.getY(), ln.end.getX(), ln.end.getY(), paint);
-                paint.setColor(Color.RED);
 
                 if (rightSide)
                     imageViewRight.setImageBitmap(drawingBitmap);
@@ -373,7 +382,6 @@ public class MainActivity extends Activity {
 
     //delete a selected line
     public void deleteLine(ArrayList<Line> linesList, float touchX, float touchY) {
-        System.out.println("HEREEE");
         int index;
         for (Line ln : linesList) {
             if (radiusCheck(touchX, touchY, ln.getStart().getX(), ln.getStart().getY()) || radiusCheck(touchX, touchY, ln.getEnd().getX(), ln.getEnd().getY())) {   //IF it's an end point they grabbed...
@@ -383,7 +391,6 @@ public class MainActivity extends Activity {
                 break;
             }
         }
-        //refreshLines(linesList);
 
     }
 
@@ -398,25 +405,81 @@ public class MainActivity extends Activity {
     }
 
 
-    public void testWarp(View view) {
-        if(!leftList.isEmpty() && !rightList.isEmpty()) {
-            //warpRight(leftImage, rightImage, leftList, rightList );
-            //warpLeft(leftImage, rightImage, leftList, rightList );
-            morph.setNumFrames(1);
-            morph.doTheMorph(leftList, rightList, leftImage, rightImage);
-            newBitmaps = morph.morphedImages;
-            imageViewLeft.setBackgroundResource(R.drawable.morph_animation);
-            morphAnimation = (AnimationDrawable)imageViewLeft.getBackground();
-            for(Bitmap image: newBitmaps){
-                BitmapDrawable frame = new BitmapDrawable(getResources(), image);
-                morphAnimation.addFrame(frame, 200);
-            }
+
+    //MORPH BUTTON.  Uses Morph object to morph the 2 images.
+    public void activateMorph(View view) {
+        int i = 0;
+        if(morph.numFrames <= 0) {
+            morph.setNumFrames(3);
         }
-        //Else.  Need line reference to morph!
+        morph.doTheMorph(leftList, rightList, leftImage, rightImage);
+        morphAnimation = new AnimationDrawable();
+        morphed = true;
+
+        morphAnimation.addFrame(new BitmapDrawable(getResources(), morph.morphedImages.get(0)), 600);
+        for (i = 1; i < morph.morphedImages.size() - 1; i++) {
+            morphAnimation.addFrame(new BitmapDrawable(getResources(), morph.morphedImages.get(i)), 200);
+        }
+        morphAnimation.addFrame(new BitmapDrawable(getResources(), morph.morphedImages.get(i)), 600);
+        last = morph.morphedImages.size() - 1;
+
+        morphAnimation.start();
+        imageViewLeft.setImageDrawable(morphAnimation);
+        imageViewRight.setImageBitmap(morph.morphedImages.get(last-1));
+
+    }
+
+
+    //step through the morphed frames.  Previous frame.
+    public void previousFrame(View view) {
+        if (morphed) {
+            last = morph.morphedImages.size() - 1;
+            if (frame == 0) {
+                frame = last;      //frame is the index of morphedImages array in morph.
+            } else {
+                frame--;
+            }
+            imageViewRight.setImageBitmap(morph.morphedImages.get(frame));
+        }
     }
 
 
 
+
+    //step through the morphed frames.  Next frame.
+    public void nextFrame(View view) {
+        if (morphed) {
+            if (frame == last) {
+                frame = 0;
+            } else {
+                frame++;
+            }
+            imageViewRight.setImageBitmap(morph.morphedImages.get(frame));
+        }
+    }
+
+
+
+
+
+
+
+    View.OnKeyListener inputListen = new View.OnKeyListener() {
+        public boolean onKey(View v, int keyCode, KeyEvent event) {
+            // If the event is a key-down event on the "enter" button
+            if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                    (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                // Perform action on key press
+                imageViewLeft.requestFocus();
+                myEdit = (EditText) findViewById(R.id.editText);
+                String inputString =  myEdit.getText().toString();
+                int numFrame = Integer.parseInt(inputString);
+                morph.setNumFrames(numFrame);
+                return true;
+            }
+            return false;
+        }
+    };
 
 
 
@@ -485,6 +548,5 @@ public class MainActivity extends Activity {
             return true;
         }
     };
-
-
 }
+
