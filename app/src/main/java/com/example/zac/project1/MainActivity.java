@@ -417,7 +417,7 @@ public class MainActivity extends Activity {
         morphed = true;
 
         morphAnimation.addFrame(new BitmapDrawable(getResources(), morph.morphedImages.get(0)), 600);
-        for (i = 1; i < morph.morphedImages.size() - 1; i++) {
+        for (i = 1; i < morph.morphedImages.size() - 2; i++) {
             morphAnimation.addFrame(new BitmapDrawable(getResources(), morph.morphedImages.get(i)), 200);
         }
         morphAnimation.addFrame(new BitmapDrawable(getResources(), morph.morphedImages.get(i)), 600);
@@ -433,7 +433,7 @@ public class MainActivity extends Activity {
     //step through the morphed frames.  Previous frame.
     public void previousFrame(View view) {
         if (morphed) {
-            last = morph.morphedImages.size() - 1;
+            last = morph.morphedImages.size() - 2;
             if (frame == 0) {
                 frame = last;      //frame is the index of morphedImages array in morph.
             } else {
